@@ -50,7 +50,7 @@
 					<div class="card-box height-100-p widget-style3">
 
 						<?php
-						$sql = "SELECT emp_id from tblemployees where role = 'Staff' ";
+						$sql = "SELECT emp_id from tblemployees";
 						$query = $dbh -> prepare($sql);
 						$query->execute();
 						$results=$query->fetchAll(PDO::FETCH_OBJ);
@@ -154,7 +154,7 @@
 						<div class="user-list">
 							<ul>
 								<?php
-		                         $query = mysqli_query($conn,"select * from tblemployees ORDER BY tblemployees.emp_id desc limit 4") or die(mysqli_error());
+		                         $query = mysqli_query($conn,"select * from tblemployees where role='HOD' ORDER BY tblemployees.emp_id desc limit 4") or die(mysqli_error());
 		                         while ($row = mysqli_fetch_array($query)) {
 		                         $id = $row['emp_id'];
 		                             ?>
@@ -201,7 +201,7 @@
 						<div class="user-list">
 							<ul>
 								<?php
-		                         $query = mysqli_query($conn,"select * from tblemployees where role = 'Admin' ORDER BY tblemployees.emp_id desc limit 4") or die(mysqli_error());
+		                         $query = mysqli_query($conn,"select * from tblemployees where role = 'Staff' ORDER BY tblemployees.emp_id desc limit 4") or die(mysqli_error());
 		                         while ($row = mysqli_fetch_array($query)) {
 		                         $id = $row['emp_id'];
 		                             ?>
@@ -237,22 +237,20 @@
 								<th class="table-plus datatable-nosort">STAFF NAME</th>
 								<th>LEAVE TYPE</th>
 								<th>APPLIED DATE</th>
-								<th>STATUS</th>
+								<th>HOD STATUS</th>
+								<th>REG. STATUS</th>
 								<th class="datatable-nosort">ACTION</th>
 							</tr>
 						</thead>
 						<tbody>
 							<tr>
 
-								<?php $sql = "SELECT tblleaves.id as lid,tblemployees.FirstName,tblemployees.LastName,tblemployees.emp_id,tblleaves.LeaveType,tblleaves.PostingDate,tblleaves.Status from tblleaves join tblemployees on tblleaves.empid=tblemployees.emp_id order by lid desc limit 5";
-									$query = $dbh -> prepare($sql);
-									$query->execute();
-									$results=$query->fetchAll(PDO::FETCH_OBJ);
-									$cnt=1;
-									if($query->rowCount() > 0)
-									{
-									foreach($results as $result)
-									{         
+								<?php 
+								$status=1;
+								$sql = "SELECT tblleaves.id as lid,tblemployees.FirstName,tblemployees.LastName,tblemployees.location,tblemployees.emp_id,tblleaves.LeaveType,tblleaves.PostingDate,tblleaves.Status, tblleaves.admin_status from tblleaves join tblemployees on tblleaves.empid=tblemployees.emp_id where tblleaves.Status= '$status' order by lid desc limit 5";
+									$query = mysqli_query($conn, $sql) or die(mysqli_error());
+									while ($row = mysqli_fetch_array($query)) {
+									  $cnt=1;
 								 ?>  
 
 								<td class="table-plus">
@@ -261,13 +259,23 @@
 											<b><?php echo htmlentities($cnt);?></b>
 										</div>
 										<div class="txt">
-											<div class="weight-600"><?php echo htmlentities($result->FirstName." ".$result->LastName);?></div>
+											<div class="weight-600"><?php echo $row['FirstName']." ".$row['LastName'];?></div>
 										</div>
 									</div>
 								</td>
-								<td><?php echo htmlentities($result->LeaveType);?></td>
-	                            <td><?php echo htmlentities($result->PostingDate);?></td>
-								<td><?php $stats=$result->Status;
+								<td><?php echo $row['LeaveType']; ?></td>
+	                            <td><?php echo $row['PostingDate']; ?></td>
+								<td><?php $stats=$row['Status'];
+	                             if($stats==1){
+	                              ?>
+	                                  <span style="color: green">Approved</span>
+	                                  <?php } if($stats==2)  { ?>
+	                                 <span style="color: red">Rejected</span>
+	                                  <?php } if($stats==0)  { ?>
+	                             <span style="color: blue">Pending</span>
+	                             <?php } ?>
+	                            </td>
+	                            <td><?php $stats=$row['admin_status'];
 	                             if($stats==1){
 	                              ?>
 	                                  <span style="color: green">Approved</span>
@@ -283,13 +291,13 @@
 											<i class="dw dw-more"></i>
 										</a>
 										<div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
-											<a class="dropdown-item" href="leave_details.php?leaveid=<?php echo htmlentities($result->lid);?>"><i class="dw dw-eye"></i> View</a>
-											<a class="dropdown-item" href="admin_dashboard.php?leaveid=<?php echo htmlentities($result->lid);?>"><i class="dw dw-delete-3"></i> Delete</a>
+											<a class="dropdown-item" href="leave_details.php?leaveid=<?php echo $row['lid']; ?>"><i class="dw dw-eye"></i> View</a>
+											<a class="dropdown-item" href="admin_dashboard.php?leaveid=<?php echo $row['lid']; ?>"><i class="dw dw-delete-3"></i> Delete</a>
 										</div>
 									</div>
 								</td>
 							</tr>
-							<?php $cnt++;} }?>
+							<?php $cnt++; }?>
 						</tbody>
 					</table>
 			   </div>
